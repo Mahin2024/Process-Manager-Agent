@@ -1,0 +1,9 @@
+@echo off
+echo Starting Django server...
+start cmd /k "python manage.py runserver"
+timeout /t 3
+echo Starting agent to collect system info...
+start cmd /k "python agent/agent.py"
+timeout /t 3
+echo Opening frontend...
+start "" "http://127.0.0.1:8000/api"

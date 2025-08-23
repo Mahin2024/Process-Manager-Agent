@@ -1,0 +1,1318 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Monitor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(135deg, #2c3e50, #1a2530);
+      color: white;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding-bottom: 20px;
+      border-bottom: 1px solid #34495e;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #bdc3c7;
+    }
+
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      padding: 12px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn:hover {
+      background: #2980b9;
+      transform: translateX(5px);
+    }
+
+    .nav-btn.active {
+      background: #e74c3c;
+      box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .nav-btn i {
+      font-size: 1.2rem;
+    }
+
+    .refresh-btn {
+      padding: 12px 15px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .refresh-btn:hover {
+      background: #219653;
+      transform: translateY(-2px);
+    }
+
+    .status {
+      margin: 20px 0;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      display: block;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 30px;
+      overflow: auto;
+      background-color: #f8f9fa;
+    }
+
+    .tab {
+      animation: fadeIn 0.3s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tab-header {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .tab-header h2 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .last-updated {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 300px;
+      font-size: 0.9rem;
+    }
+
+    .search-box button {
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .search-box button:hover {
+      background: #2980b9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #34495e;
+      color: white;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    table th:nth-child(1), table td:nth-child(1) { width: 10%; } /* PID */
+    table th:nth-child(2), table td:nth-child(2) { width: 25%; } /* Name */
+    table th:nth-child(3), table td:nth-child(3) { width: 20%; } /* Memory */
+    table th:nth-child(4), table td:nth-child(4) { width: 15%; } /* CPU */
+    table th:nth-child(5), table td:nth-child(5) { width: 10%; } /* PPID */
+
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .process-name {
+      font-weight: 500;
+    }
+
+    .process-pid {
+      color: #829192;
+      font-family: monospace;
+    }
+
+    .memory-high {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .cpu-high {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .pagination button {
+      padding: 8px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 15px;
+      }
+      
+      .nav-buttons {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      
+      .nav-btn {
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 15px;
+      }
+      
+      .search-box {
+        flex-direction: column;
+      }
+      
+      .search-box input {
+        width: 100%;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>System Monitor</h1>
+      <h2 id="hostname">Loading...</h2>
+    </div>
+
+    <div class="nav-buttons">
+      <button id="btn-system" class="nav-btn active">
+        <i>📊</i> System Details
+      </button>
+      <button id="btn-process" class="nav-btn">
+        <i>⚙️</i> Processes Details
+      </button>
+    </div>
+
+    <button id="btn-refresh" class="refresh-btn">
+      <i>🔄</i> Refresh Data
+    </button>
+
+    <div id="status" class="status"></div>
+  </div>
+  
+  <div class="content">
+    <div id="system" class="tab">
+      <div class="tab-header">
+        <h2>System Information</h2>
+        <div class="last-updated" id="system-last-updated"></div>
+      </div>
+
+      <table id="system-info-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="process" class="tab hidden">
+      <div class="tab-header">
+        <h2>Running Processes</h2>
+        <div class="last-updated" id="process-last-updated"></div>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="process-search" placeholder="Search by name, PID, or path...">
+        <button onclick="filterProcesses()">Search</button>
+        <button onclick="clearSearch()">Clear</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Memory (MB)</th>
+            <th>CPU (%)</th>
+            <th>PPID</th>
+          </tr>
+        </thead>
+        <tbody id="process-table">
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <button id="prev-page" onclick="changePage(-1)">Previous</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button id="next-page" onclick="changePage(1)">Next</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000/api";
+    // Global variables
+    let allProcesses = [];
+    let currentPage = 1;
+    const processesPerPage = 50;
+    let currentSystemInfo = null;
+
+    // DOM elements
+    const systemTab = document.getElementById("system");
+    const processTab = document.getElementById("process");
+    const statusEl = document.getElementById("status");
+    const hostnameEl = document.getElementById("hostname");
+    const systemLastUpdatedEl = document.getElementById("system-last-updated");
+    const processLastUpdatedEl = document.getElementById("process-last-updated");
+    const processTableEl = document.getElementById("process-table");
+    const prevPageBtn = document.getElementById("prev-page");
+    const nextPageBtn = document.getElementById("next-page");
+    const pageInfoEl = document.getElementById("page-info");
+
+    // API configuration
+    let currentTab = "system";
+    // Tab management
+    function showTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll(".tab").forEach(el => el.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+
+      document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+      if (tabId === "system") {
+        document.querySelector("#btn-system").classList.add("active");
+      } else {
+        document.querySelector("#btn-process").classList.add("active");
+        renderProcessTable();
+      }
+      localStorage.setItem("lastTab", tabId);
+    }
+
+    // Status messages
+    function showStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+      setTimeout(() => {
+        statusEl.textContent = '';
+        statusEl.className = 'status';
+      }, 5000);
+    }
+
+    // Utility functions
+    function formatGB(bytes) {
+      return (bytes / (1024 * 1024 * 1024)).toFixed(1);
+    }
+
+    function formatMB(mb) {
+      return typeof mb === 'number' ? mb.toFixed(2) : '0.00';
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+
+    // API functions
+    async function fetchJSON(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        return await res.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    }
+
+    // Process filtering and pagination
+    function filterProcesses() {
+      const searchTerm = document.getElementById('process-search').value.toLowerCase();
+      const filtered = searchTerm ? 
+        allProcesses.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          p.pid.toString().includes(searchTerm) ||
+          (p.exe_path && p.exe_path.toLowerCase().includes(searchTerm))
+        ) : allProcesses;
+      
+      currentPage = 1;
+      renderProcessTable(filtered);
+    }
+
+    function clearSearch() {
+      document.getElementById('process-search').value = '';
+      currentPage = 1;
+      renderProcessTable(allProcesses);
+    }
+
+    function changePage(direction) {
+      const totalPages = Math.ceil(allProcesses.length / processesPerPage);
+      currentPage += direction;
+      
+      if (currentPage < 1) currentPage = 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      
+      renderProcessTable();
+    }
+
+    function renderProcessTable(processes = allProcesses) {
+      const totalPages = Math.ceil(processes.length / processesPerPage);
+      
+      // Update pagination controls
+      prevPageBtn.disabled = currentPage <= 1;
+      nextPageBtn.disabled = currentPage >= totalPages;
+      pageInfoEl.textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      // Get current page of processes
+      const startIndex = (currentPage - 1) * processesPerPage;
+      const endIndex = startIndex + processesPerPage;
+      const pageProcesses = processes.slice(startIndex, endIndex);
+      
+      // Render the table
+      processTableEl.innerHTML = pageProcesses.map(p => `
+        <tr>
+          <td class="process-pid">${p.pid}</td>
+          <td class="process-name">${p.name}</td>
+          <td class="${p.memory_mb > 100 ? 'memory-high' : ''}">
+            ${p.memory_mb ? formatMB(p.memory_mb) : '0.00'}
+          </td>
+          <td class="${p.cpu_percent > 10 ? 'cpu-high' : ''}">
+            ${p.cpu_percent ? p.cpu_percent.toFixed(1) : '0.0'}
+          </td>
+          <td>${p.ppid}</td>
+        
+        </tr>
+      `).join("");
+    }
+
+    // Main data loading function
+      async function loadData() {
+        showStatus('Loading data...', 'info');
+
+        try {
+          // 1️⃣ Get system info list first
+          const systems = await fetchJSON(`${API_BASE}/system-info-list/`);
+          if (!systems || systems.length === 0) {
+            showStatus('No system data found. Is the agent running?', 'error');
+            return;
+          }
+
+          // 2️⃣ Get the latest system info for display
+          const hostname = systems[0].hostname;
+          hostnameEl.textContent = hostname;
+
+          // 3️⃣ Get specific system info for this hostname
+          const systemInfo = await fetchJSON(`${API_BASE}/system-info/${hostname}/`);
+          currentSystemInfo = systemInfo;
+
+          // Update system info timestamp
+          systemLastUpdatedEl.textContent = `Last updated: ${formatDate(systemInfo.collected_at)}`;
+
+          // Update system info table
+          const sysTable = document.querySelector("#system-info-table tbody");
+          sysTable.innerHTML = `
+            <tr><td>Hostname</td><td>${systemInfo.hostname}</td></tr>
+            <tr><td>Operating System</td><td>${systemInfo.os} ${systemInfo.release} (${systemInfo.os_version})</td></tr>
+            <tr><td>Processor</td><td>${systemInfo.processor}</td></tr>
+            <tr><td>Physical Cores</td><td>${systemInfo.physical_cores}</td></tr>
+            <tr><td>Logical Cores</td><td>${systemInfo.logical_cores}</td></tr>
+            <tr><td>CPU Frequency</td><td>${systemInfo.cpu_freq_current} MHz</td></tr>
+            <tr><td>Total RAM</td><td>${formatGB(systemInfo.total_ram)} GB</td></tr>
+            <tr><td>Used RAM</td><td>${formatGB(systemInfo.used_ram)} GB</td></tr>
+            <tr><td>Available RAM</td><td>${formatGB(systemInfo.available_ram)} GB</td></tr>
+            <tr><td>Storage Total</td><td>${formatGB(systemInfo.storage_total)} GB</td></tr>
+            <tr><td>Storage Used</td><td>${formatGB(systemInfo.storage_used)} GB</td></tr>
+            <tr><td>Storage Free</td><td>${formatGB(systemInfo.storage_free)} GB</td></tr>
+            <tr><td>CPU Usage</td><td>${systemInfo.cpu_percent ? systemInfo.cpu_percent.toFixed(1) : '0.0'}%</td></tr>
+            <tr><td>Boot Time</td><td>${formatDate(new Date(systemInfo.boot_time * 1000).toISOString())}</td></tr>
+          `;
+
+          // 4️⃣ Get processes for this hostname
+          const procList = await fetchJSON(`${API_BASE}/processes/?hostname=${encodeURIComponent(hostname)}`);
+
+          if (!procList || procList.length === 0) {
+            showStatus('No process data found for this host', 'error');
+            return;
+          }
+
+          // Update process data
+          processLastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
+          allProcesses = procList;
+          console.log("Processes loaded:", allProcesses.length);
+
+          // 5️⃣ Render process table only if user is on process tab
+          if (currentTab === "process") {
+            renderProcessTable();
+          }
+
+          showStatus(`Data loaded successfully. ${procList.length} processes found.`, 'success');
+
+        } catch (err) {
+          console.error("Error loading data:", err);
+          showStatus('Failed to fetch data. Make sure the Django server is running.', 'error');
+        }
+      }
+
+    // Initialize the application
+    window.onload = function () {
+      // Set up event listeners
+      document.getElementById("btn-system").addEventListener("click", () => showTab("system"));
+      document.getElementById("btn-process").addEventListener("click", () => showTab("process"));
+      document.getElementById("btn-refresh").addEventListener("click", loadData);
+      
+      // Add Enter key support for search
+      document.getElementById("process-search").addEventListener("keypress", (e) => {
+        if (e.key === 'Enter') filterProcesses();
+      });
+      const lastTab = localStorage.getItem("lastTab") || "system";
+      showTab(lastTab);
+
+      // // Initial load
+      // showTab("system");
+      loadData();
+    };
+  </script>
+</body>
+</html>
+ -->
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Monitor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(135deg, #2c3e50, #1a2530);
+      color: white;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding-bottom: 20px;
+      border-bottom: 1px solid #34495e;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #bdc3c7;
+    }
+
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      padding: 12px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn:hover {
+      background: #2980b9;
+      transform: translateX(5px);
+    }
+
+    .nav-btn.active {
+      background: #e74c3c;
+      box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .nav-btn i {
+      font-size: 1.2rem;
+    }
+
+    .refresh-btn {
+      padding: 12px 15px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .refresh-btn:hover {
+      background: #219653;
+      transform: translateY(-2px);
+    }
+
+    .auto-refresh-btn {
+      padding: 12px 15px;
+      background: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .auto-refresh-btn:hover {
+      background: #e67e22;
+    }
+
+    .auto-refresh-btn.active {
+      background: #e74c3c;
+      box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .status {
+      margin: 20px 0;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      display: block;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 30px;
+      overflow: auto;
+      background-color: #f8f9fa;
+    }
+
+    .tab {
+      animation: fadeIn 0.3s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tab-header {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .tab-header h2 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .last-updated {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 300px;
+      font-size: 0.9rem;
+    }
+
+    .search-box button {
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .search-box button:hover {
+      background: #2980b9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #34495e;
+      color: white;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    table th:nth-child(1), table td:nth-child(1) { width: 10%; } /* PID */
+    table th:nth-child(2), table td:nth-child(2) { width: 25%; } /* Name */
+    table th:nth-child(3), table td:nth-child(3) { width: 20%; } /* Memory */
+    table th:nth-child(4), table td:nth-child(4) { width: 15%; } /* CPU */
+    table th:nth-child(5), table td:nth-child(5) { width: 10%; } /* PPID */
+
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .process-name {
+      font-weight: 500;
+    }
+
+    .process-pid {
+      color: #829192;
+      font-family: monospace;
+    }
+
+    .memory-high {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .cpu-high {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .pagination button {
+      padding: 8px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 15px;
+      }
+      
+      .nav-buttons {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      
+      .nav-btn {
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 15px;
+      }
+      
+      .search-box {
+        flex-direction: column;
+      }
+      
+      .search-box input {
+        width: 100%;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>System Monitor</h1>
+      <h2 id="hostname">Loading...</h2>
+    </div>
+
+    <div class="nav-buttons">
+      <button id="btn-system" class="nav-btn active">
+        <i>📊</i> System Details
+      </button>
+      <button id="btn-process" class="nav-btn">
+        <i>⚙️</i> Processes Details
+      </button>
+    </div>
+
+    <button id="btn-refresh" class="refresh-btn">
+      <i>🔄</i> Refresh Data
+    </button>
+
+    <button id="btn-auto-refresh" class="auto-refresh-btn">
+      <i>⏱️</i> Auto-Refresh: ON
+    </button>
+
+    <div id="status" class="status"></div>
+  </div>
+  
+  <div class="content">
+    <!-- System Tab -->
+    <div id="system" class="tab">
+      <div class="tab-header">
+        <h2>System Information</h2>
+        <div class="last-updated" id="system-last-updated"></div>
+      </div>
+
+      <table id="system-info-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- System info will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Process Tab -->
+    <div id="process" class="tab hidden">
+      <div class="tab-header">
+        <h2>Running Processes</h2>
+        <div class="last-updated" id="process-last-updated"></div>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="process-search" placeholder="Search by name, PID, or path...">
+        <button onclick="filterProcesses()">Search</button>
+        <button onclick="clearSearch()">Clear</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Memory (MB)</th>
+            <th>CPU (%)</th>
+            <th>PPID</th>
+          </tr>
+        </thead>
+        <tbody id="process-table">
+          <!-- Processes will be populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <button id="prev-page" onclick="changePage(-1)">Previous</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button id="next-page" onclick="changePage(1)">Next</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000/api";
+    // Global variables
+    let allProcesses = [];
+    let currentPage = 1;
+    const processesPerPage = 50;
+    let currentSystemInfo = null;
+    let refreshInterval = null;
+    const AUTO_REFRESH_INTERVAL = 5000; // 5 seconds
+    let isAutoRefreshEnabled = true;
+
+    // DOM elements
+    const systemTab = document.getElementById("system");
+    const processTab = document.getElementById("process");
+    const statusEl = document.getElementById("status");
+    const hostnameEl = document.getElementById("hostname");
+    const systemLastUpdatedEl = document.getElementById("system-last-updated");
+    const processLastUpdatedEl = document.getElementById("process-last-updated");
+    const processTableEl = document.getElementById("process-table");
+    const prevPageBtn = document.getElementById("prev-page");
+    const nextPageBtn = document.getElementById("next-page");
+    const pageInfoEl = document.getElementById("page-info");
+    const autoRefreshBtn = document.getElementById("btn-auto-refresh");
+
+    // API configuration
+    let currentTab = "system";
+
+    // Auto-refresh functions
+    function startAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+        refreshInterval = setInterval(loadData, AUTO_REFRESH_INTERVAL);
+        autoRefreshBtn.innerHTML = '<i>⏱️</i> Auto-Refresh: ON';
+        autoRefreshBtn.classList.add('active');
+        isAutoRefreshEnabled = true;
+        console.log("Auto-refresh started: Every", AUTO_REFRESH_INTERVAL / 1000, "seconds");
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+        autoRefreshBtn.innerHTML = '<i>⏱️</i> Auto-Refresh: OFF';
+        autoRefreshBtn.classList.remove('active');
+        isAutoRefreshEnabled = false;
+        console.log("Auto-refresh stopped");
+    }
+
+    function toggleAutoRefresh() {
+        if (isAutoRefreshEnabled) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    }
+
+    // Tab management
+    function showTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll(".tab").forEach(el => el.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+
+      document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+      if (tabId === "system") {
+        document.querySelector("#btn-system").classList.add("active");
+      } else {
+        document.querySelector("#btn-process").classList.add("active");
+        renderProcessTable();
+      }
+      localStorage.setItem("lastTab", tabId);
+    }
+
+    // Status messages
+    function showStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+      setTimeout(() => {
+        statusEl.textContent = '';
+        statusEl.className = 'status';
+      }, 5000);
+    }
+
+    // Utility functions
+    function formatGB(bytes) {
+      return (bytes / (1024 * 1024 * 1024)).toFixed(1);
+    }
+
+    function formatMB(mb) {
+      return typeof mb === 'number' ? mb.toFixed(2) : '0.00';
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+
+    // API functions
+    async function fetchJSON(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        return await res.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    }
+
+    // Process filtering and pagination
+    function filterProcesses() {
+      const searchTerm = document.getElementById('process-search').value.toLowerCase();
+      const filtered = searchTerm ? 
+        allProcesses.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          p.pid.toString().includes(searchTerm) ||
+          (p.exe_path && p.exe_path.toLowerCase().includes(searchTerm))
+        ) : allProcesses;
+      
+      currentPage = 1;
+      renderProcessTable(filtered);
+    }
+
+    function clearSearch() {
+      document.getElementById('process-search').value = '';
+      currentPage = 1;
+      renderProcessTable(allProcesses);
+    }
+
+    function changePage(direction) {
+      const totalPages = Math.ceil(allProcesses.length / processesPerPage);
+      currentPage += direction;
+      
+      if (currentPage < 1) currentPage = 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      
+      renderProcessTable();
+    }
+
+    function renderProcessTable(processes = allProcesses) {
+      const totalPages = Math.ceil(processes.length / processesPerPage);
+      
+      // Update pagination controls
+      prevPageBtn.disabled = currentPage <= 1;
+      nextPageBtn.disabled = currentPage >= totalPages;
+      pageInfoEl.textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      // Get current page of processes
+      const startIndex = (currentPage - 1) * processesPerPage;
+      const endIndex = startIndex + processesPerPage;
+      const pageProcesses = processes.slice(startIndex, endIndex);
+      
+      // Render the table
+      processTableEl.innerHTML = pageProcesses.map(p => `
+        <tr>
+          <td class="process-pid">${p.pid}</td>
+          <td class="process-name">${p.name}</td>
+          <td class="${p.memory_mb > 100 ? 'memory-high' : ''}">
+            ${p.memory_mb ? formatMB(p.memory_mb) : '0.00'}
+          </td>
+          <td class="${p.cpu_percent > 10 ? 'cpu-high' : ''}">
+            ${p.cpu_percent ? p.cpu_percent.toFixed(1) : '0.0'}
+          </td>
+          <td>${p.ppid}</td>
+        </tr>
+      `).join("");
+    }
+
+    // Main data loading function
+    async function loadData() {
+      // Don't show status during auto-refresh to avoid flickering
+      if (!isAutoRefreshEnabled) {
+        showStatus('Loading data...', 'info');
+      }
+
+      try {
+        // 1️⃣ Get system info list first
+        const systems = await fetchJSON(`${API_BASE}/system-info-list/`);
+        if (!systems || systems.length === 0) {
+          showStatus('No system data found. Is the agent running?', 'error');
+          return;
+        }
+
+        // 2️⃣ Get the latest system info for display
+        const hostname = systems[0].hostname;
+        hostnameEl.textContent = hostname;
+
+        // 3️⃣ Get specific system info for this hostname
+        const systemInfo = await fetchJSON(`${API_BASE}/system-info/${hostname}/`);
+        currentSystemInfo = systemInfo;
+
+        // Update system info timestamp
+        systemLastUpdatedEl.textContent = `Last updated: ${formatDate(systemInfo.collected_at)}`;
+
+        // Update system info table
+        const sysTable = document.querySelector("#system-info-table tbody");
+        sysTable.innerHTML = `
+          <tr><td>Hostname</td><td>${systemInfo.hostname}</td></tr>
+          <tr><td>Operating System</td><td>${systemInfo.os} ${systemInfo.release} (${systemInfo.os_version})</td></tr>
+          <tr><td>Processor</td><td>${systemInfo.processor}</td></tr>
+          <tr><td>Physical Cores</td><td>${systemInfo.physical_cores}</td></tr>
+          <tr><td>Logical Cores</td><td>${systemInfo.logical_cores}</td></tr>
+          <tr><td>CPU Frequency</td><td>${systemInfo.cpu_freq_current} MHz</td></tr>
+          <tr><td>Total RAM</td><td>${formatGB(systemInfo.total_ram)} GB</td></tr>
+          <tr><td>Used RAM</td><td>${formatGB(systemInfo.used_ram)} GB</td></tr>
+          <tr><td>Available RAM</td><td>${formatGB(systemInfo.available_ram)} GB</td></tr>
+          <tr><td>Storage Total</td><td>${formatGB(systemInfo.storage_total)} GB</td></tr>
+          <tr><td>Storage Used</td><td>${formatGB(systemInfo.storage_used)} GB</td></tr>
+          <tr><td>Storage Free</td><td>${formatGB(systemInfo.storage_free)} GB</td></tr>
+          <tr><td>CPU Usage</td><td>${systemInfo.cpu_percent ? systemInfo.cpu_percent.toFixed(1) : '0.0'}%</td></tr>
+          <tr><td>Boot Time</td><td>${formatDate(new Date(systemInfo.boot_time * 1000).toISOString())}</td></tr>
+        `;
+
+        // 4️⃣ Get processes for this hostname
+        const procList = await fetchJSON(`${API_BASE}/processes/?hostname=${encodeURIComponent(hostname)}`);
+
+        if (!procList || procList.length === 0) {
+          if (!isAutoRefreshEnabled) {
+            showStatus('No process data found for this host', 'error');
+          }
+          allProcesses = [];
+          if (currentTab === "process") {
+            renderProcessTable();
+          }
+          return;
+        }
+
+        // Update process data
+        processLastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
+        allProcesses = procList;
+
+        // 5️⃣ Render process table only if user is on process tab
+        if (currentTab === "process") {
+          renderProcessTable();
+        }
+
+        if (!isAutoRefreshEnabled) {
+          showStatus(`Data loaded successfully. ${procList.length} processes found.`, 'success');
+        }
+
+      } catch (err) {
+        console.error("Error loading data:", err);
+        if (!isAutoRefreshEnabled) {
+          showStatus('Failed to fetch data. Make sure the Django server is running.', 'error');
+        }
+        
+        // Stop auto-refresh on error
+        stopAutoRefresh();
+      }
+    }
+
+    // Initialize the application
+    window.onload = function () {
+      // Set up event listeners
+      document.getElementById("btn-system").addEventListener("click", () => showTab("system"));
+      document.getElementById("btn-process").addEventListener("click", () => showTab("process"));
+      document.getElementById("btn-refresh").addEventListener("click", loadData);
+      autoRefreshBtn.addEventListener("click", toggleAutoRefresh);
+      
+      // Add Enter key support for search
+      document.getElementById("process-search").addEventListener("keypress", (e) => {
+        if (e.key === 'Enter') filterProcesses();
+      });
+      
+      const lastTab = localStorage.getItem("lastTab") || "system";
+      showTab(lastTab);
+
+      // Start auto-refresh and load initial data
+      startAutoRefresh();
+      loadData();
+    };
+  </script>
+</body>
+</html>

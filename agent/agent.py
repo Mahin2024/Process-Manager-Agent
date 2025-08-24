@@ -14,6 +14,7 @@ def safe_get(f, default=None):
     except Exception:
         return default
 
+
 def get_system_info():
     hostname = socket.gethostname()
     ip_addr = safe_get(lambda: socket.gethostbyname(hostname), "0.0.0.0")
@@ -23,12 +24,25 @@ def get_system_info():
 
     cpu_freq = psutil.cpu_freq() or type("obj", (), {"current": 0, "max": 0})
 
+    system = platform.system()
+    release = platform.release()
+    version = platform.version()
+
+    # 🔧 Fix: Detect Windows 11 correctly
+    if system == "Windows" and release == "10":
+        try:
+            build = int(version.split(".")[2])
+            if build >= 22000:
+                release = "11"
+        except Exception:
+            pass
+
     return {
         "hostname": hostname,
         "ip": ip_addr,
-        "os": platform.system(),
-        "os_version": platform.version(),
-        "release": platform.release(),
+        "os": system,
+        "os_version": version,
+        "release": release,
         "machine": platform.machine(),
         "processor": platform.processor() or platform.uname().processor,
         "physical_cores": psutil.cpu_count(logical=False) or 0,
@@ -45,11 +59,6 @@ def get_system_info():
         "collected_at": datetime.utcnow().isoformat() + "Z",
         "cpu_percent": psutil.cpu_percent(interval=1.0),
     }
-
-import psutil
-import socket
-import time
-import platform
 
 def get_process_list():
     # First pass to prime CPU calculations

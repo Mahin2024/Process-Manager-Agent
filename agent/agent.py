@@ -5,6 +5,7 @@ import requests
 import time
 import ctypes
 from datetime import datetime
+import wmi
 
 
 API_BASE = "http://localhost:8000/api"
@@ -129,7 +130,6 @@ def get_process_list():
     # Additional method: Use WMI to get more processes (Windows only)
     if platform.system() == "Windows":
         try:
-            import wmi
             c = wmi.WMI()
             for process in c.Win32_Process():
                 pid = process.ProcessId

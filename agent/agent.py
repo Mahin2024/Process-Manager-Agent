@@ -6,7 +6,7 @@ import time
 import ctypes
 from datetime import datetime
 import wmi
-
+import sys
 
 API_BASE = "http://localhost:8000/api"
 
@@ -29,15 +29,8 @@ def get_system_info():
     system = platform.system()
     release = platform.release()
     version = platform.version()
-
-    # 🔧 Fix: Detect Windows 11 correctly
-    if system == "Windows" and release == "10":
-        try:
-            build = int(version.split(".")[2])
-            if build >= 22000:
-                release = "11"
-        except Exception:
-            pass
+    system = platform.system()
+    release = platform.release()
 
     return {
         "hostname": hostname,

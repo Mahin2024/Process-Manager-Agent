@@ -14,10 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import render
+
+def index(request):
+    return render(request, "index.html")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('process.urls')),  # Include URLs from the process app
+    path("admin/", admin.site.urls),
+    path("api/", include("process.urls")),   # 👈 API routes
+    path("", index, name="home"),            # 👈 Frontend home
 ]
+

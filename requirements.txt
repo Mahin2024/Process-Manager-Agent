@@ -1,3 +1,6 @@
 Django>=4.2
 djangorestframework>=3.16
 psutil>=5.9
+django-cors-headers>=4.3
+requests>=2.31
+wmi>=1.5.1 ; platform_system == "Windows"

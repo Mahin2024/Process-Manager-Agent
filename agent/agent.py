@@ -6,7 +6,8 @@ import time
 import ctypes
 from datetime import datetime
 
-API_BASE = "http://localhost:8000/api"  # Django backend
+
+API_BASE = "http://localhost:8000/api"
 
 def safe_get(f, default=None):
     try:

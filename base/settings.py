@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'process',  # Your app for process management
-    'agent',    # Your app for agent functionality
     'corsheaders',  # If you are using CORS
 ]
 
